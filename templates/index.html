@@ -127,8 +127,11 @@
     <script>
         let isGameOver = false;
         
-        // URL Configuration
-        const BACKEND_URL = 'http://127.0.0.1:5000';
+        // URL Configuration: 
+        // We REMOVED the hardcoded BACKEND_URL. 
+        // Using relative paths ('/guess') automatically connects to the correct server,
+        // whether it's Localhost or Render.
+        
         const BASE_IMG_URLS = {
             letters: '/static/letters png img/',
             hangman: '/static/hangman png img/'
@@ -162,7 +165,8 @@
             
             document.getElementById(buttonId).disabled = true;
 
-            fetch(`${BACKEND_URL}/guess`, {
+            // CHANGED: Using relative path '/guess' instead of full URL
+            fetch('/guess', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -175,12 +179,14 @@
             .then(data => updateGame(data))
             .catch((error) => {
                 console.error('Fetch Error:', error);
-                alert('Could not process guess. Please try again.'); 
+                // Changed alert to be more helpful
+                alert('Connection error. If you are testing locally, make sure python app.py is running.'); 
             });
         }
 
         function restartGame() {
-            fetch(`${BACKEND_URL}/restart`, {
+            // CHANGED: Using relative path '/restart' instead of full URL
+            fetch('/restart', {
                 method: 'POST',
                 credentials: 'include',
             })
