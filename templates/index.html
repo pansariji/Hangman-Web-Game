@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hangman Web Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffe7; 
+            text-align: center;
+            padding-top: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            margin: 0 auto 20px;
+        }
+        #score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #hangman-display-container {
+            margin: 20px auto;
+        }
+        #hangman-image {
+            max-height: 350px; 
+            width: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        #error-text {
+            font-size: 24px;
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        #word-display {
+            font-size: 60px;
+            margin: 40px 0;
+            letter-spacing: 20px;
+        }
+        .keyboard {
+            width: 90%;
+            margin: 30px auto;
+            max-width: 750px;
+        }
+        .letter-button {
+            background: none; 
+            border: none;
+            padding: 0;
+            margin: 3px; 
+            cursor: pointer;
+            line-height: 0; 
+        }
+        .letter-button img {
+            width: 50px; 
+            height: auto;
+            transition: opacity 0.1s;
+        }
+        .letter-button:disabled img {
+            opacity: 0.3; 
+            cursor: not-allowed;
+        }
+        #message-box {
+            min-height: 40px;
+            color: #333;
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #restart-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>HANGMAN</h1>
+        <div id="score">SCORE: 0</div>
+    </div>
+    <hr>
+    
+    <div id="hangman-display-container">
+        <img id="hangman-image" src="" alt="Hangman Progress">
+        <div id="error-text"></div>
+    </div>
+
+    <div id="word-display"></div>
+
+    <div id="message-box"></div>
+    
+    <button id="restart-button" onclick="restartGame()">Play Again</button>
+
+    <div class="keyboard" id="keyboard-container">
+    </div>
+
+    <script>
+        let isGameOver = false;
+
+        function createKeyboard() {
+            const letters = 'abcdefghijklmnopqrstuvwxyz';
+            const keyboardContainer = document.getElementById('keyboard-container');
+            keyboardContainer.innerHTML = ''; 
+            
+            letters.split('').forEach(letter => {
+                const button = document.createElement('button');
+                button.className = 'letter-button';
+                button.id = 'btn-' + letter;
+                button.onclick = () => guessLetter(letter, button.id);
+                
+                const image = document.createElement('img');
+                image.src = `/static/letters png img/${letter}.png`; 
+                image.alt = letter.toUpperCase();
+                
+                button.appendChild(image);
+                keyboardContainer.appendChild(button);
+                
+                if (letter === 'm' || letter === 'z') {
+                    keyboardContainer.appendChild(document.createElement('br'));
+                }
+            });
+        }
+        
+        function guessLetter(letter, buttonId) {
+            if (isGameOver) {
+                document.getElementById('message-box').textContent = "Game Over! Click 'Play Again' to continue.";
+                return;
+            }
+            
+            document.getElementById(buttonId).disabled = true;
+
+            fetch('/guess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ letter: letter }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateGame(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('message-box').textContent = "An error occurred with the server. Check the console.";
+            });
+        }
+
+        function restartGame() {
+            fetch('/restart', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                isGameOver = false;
+                document.querySelectorAll('.letter-button').forEach(btn => {
+                    btn.disabled = false;
+                });
+                document.getElementById('restart-button').style.display = 'none';
+                updateGame(data);
+            });
+        }
+
+        function updateGame(data) {
+            document.getElementById('word-display').textContent = data.display_word;
+            document.getElementById('score').textContent = 'SCORE: ' + data.score;
+            document.getElementById('message-box').textContent = data.message;
+            
+            const imagePath = `/static/hangman png img/${data.hangman_img}.png`;
+            document.getElementById('hangman-image').src = imagePath;
+            document.getElementById('error-text').textContent = `Errors: ${data.incorrect_count}/6`;
+
+            document.querySelectorAll('.letter-button').forEach(btn => {
+                const letter = btn.id.replace('btn-', ''); 
+                if (data.guessed_letters.includes(letter)) {
+                    btn.disabled = true;
+                }
+            });
+            
+            if (data.game_over) {
+                isGameOver = true;
+                document.getElementById('restart-button').style.display = 'inline-block';
+                document.querySelectorAll('.letter-button').forEach(btn => {
+                    btn.disabled = true;
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createKeyboard(); 
+            restartGame(); 
+        });
+    </script>
+</body>
+</html>
