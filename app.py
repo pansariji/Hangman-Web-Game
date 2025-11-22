@@ -6,8 +6,10 @@ app = Flask(__name__)
 app.secret_key = 'a_very_secret_key_for_hangman' 
 
 # List of words for the game
-WORDS = ['programming', 'data', 'python', 'code', 'geeks', 'computer', 'engineer', 'word', 'science', 
-         'machine', 'java', 'college', 'player', 'mobile', 'image']
+WORDS = ['programming', 'data', 'python', 'code', 'computer', 'engineer', 'word', 'science', 
+         'machine', 'java', 'college', 'player', 'mobile', 'image', 'algorithm', 'software','tuple', 'dictionary', 'operators', 
+         'loop', 'array', 'flowchart', 'fibonacci', 'iteration', 'comments', 'hangman', 'complexity', 'module', 'function',
+         'list', 'set', 'string', 'boolean']
 
 MAX_INCORRECT_GUESSES = 6 # Corresponds to the maximum allowed errors (h1 to h7)
 
