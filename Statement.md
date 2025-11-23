@@ -1,4 +1,4 @@
-﻿[Statement](http://statement.md) ![](Aspose.Words.ddd2fd17-2458-4bd8-9df3-fc2b868f79e0.001.png)
+﻿Statement
 
 Problem Statement: 
 
